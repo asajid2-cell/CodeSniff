@@ -188,9 +188,16 @@ class APIClient {
    * Index a GitHub repository
    */
   async indexGithubRepo(repoUrl: string): Promise<IndexResponse> {
-    const response = await this.client.post<IndexResponse>('/api/index/github', {
-      repo_url: repoUrl,
-    });
+    const params = new URLSearchParams();
+    params.append('repo_url', repoUrl);
+
+    const response = await this.client.post<IndexResponse>(
+      `/api/index/github?${params.toString()}`,
+      {},
+      {
+        timeout: 300000, // 5 minutes
+      }
+    );
     return response.data;
   }
 

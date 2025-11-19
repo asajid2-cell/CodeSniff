@@ -65,12 +65,21 @@ def run_command(cmd, **kwargs):
 
 def get_python_command():
     """Get the correct Python command"""
-    if check_command('python3'):
-        return 'python3'
-    elif check_command('python'):
-        return 'python'
+    # On Windows, prioritize 'python' over 'python3'
+    is_windows = platform.system() == 'Windows'
+
+    if is_windows:
+        if check_command('python'):
+            return 'python'
+        elif check_command('python3'):
+            return 'python3'
     else:
-        return None
+        if check_command('python3'):
+            return 'python3'
+        elif check_command('python'):
+            return 'python'
+
+    return None
 
 
 def get_pip_command():
@@ -145,7 +154,7 @@ def check_prerequisites():
 
 def setup_backend():
     """Set up backend environment"""
-    print_header("Checking Backend")
+    print_header("Setting Up Backend")
 
     backend_dir = Path(__file__).parent / 'backend'
     os.chdir(backend_dir)
@@ -173,17 +182,51 @@ def setup_backend():
                 print_warning("GROQ_API_KEY not configured in .env")
                 print_info("Chatbot feature will not work until you add your Groq API key")
 
+    # Check if dependencies are installed
+    requirements_file = backend_dir / 'requirements.txt'
+    if requirements_file.exists():
+        # Check if key packages are installed
+        try:
+            import fastapi
+            import uvicorn
+            print_success("Dependencies already installed")
+        except ImportError:
+            print_info("Installing backend dependencies...")
+            pip_cmd = get_pip_command()
+            result = run_command(
+                [pip_cmd, 'install', '-r', 'requirements.txt'],
+                capture_output=False
+            )
+            if result.returncode == 0:
+                print_success("Dependencies installed successfully")
+            else:
+                print_error("Failed to install dependencies")
+                raise RuntimeError("Backend setup failed")
+
     print_success("\nBackend ready!")
 
 
 def setup_frontend():
     """Set up frontend environment"""
-    print_header("Checking Frontend")
+    print_header("Setting Up Frontend")
 
     frontend_dir = Path(__file__).parent / 'frontend'
     os.chdir(frontend_dir)
 
-    print_success("Frontend ready!")
+    # Check if node_modules exists
+    node_modules = frontend_dir / 'node_modules'
+    if not node_modules.exists():
+        print_info("Installing frontend dependencies...")
+        result = run_command(['npm', 'install'], capture_output=False)
+        if result.returncode == 0:
+            print_success("Dependencies installed successfully")
+        else:
+            print_error("Failed to install dependencies")
+            raise RuntimeError("Frontend setup failed")
+    else:
+        print_success("Dependencies already installed")
+
+    print_success("\nFrontend ready!")
 
 
 def start_backend():

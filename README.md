@@ -11,14 +11,42 @@ Semantic code search engine with natural language queries, file upload indexing,
 **Real-time Search** - Debounced queries with 40% minimum similarity threshold
 **Modern UI** - Clean GitHub/Linear-style interface with dark mode
 
-## Installation
+## Quick Start
 
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
+- Git
 - 4GB RAM minimum
 
-### Backend Setup
+### One-Command Setup
+
+```bash
+# Clone repository
+git clone https://github.com/asajid2-cell/CodeSniff.git
+cd CodeSniff
+
+# Configure API key
+cp backend/.env.example backend/.env
+# Edit backend/.env and add your GROQ_API_KEY from https://console.groq.com
+
+# Run automated setup and start servers
+python app.py
+```
+
+The launcher will:
+- Check prerequisites (Python, Node, npm, Git)
+- Install backend dependencies
+- Install frontend dependencies
+- Start both servers
+- Open browser automatically
+
+App runs on http://localhost:5173
+API runs on http://localhost:8000
+
+### Manual Setup
+
+**Backend:**
 ```bash
 cd backend
 python -m venv venv
@@ -29,19 +57,15 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env and add your GROQ_API_KEY
 
-python -m app.main
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
-Server runs on http://localhost:8000
-
-### Frontend Setup
+**Frontend:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-App runs on http://localhost:5173
 
 ## Configuration
 
@@ -193,10 +217,9 @@ Automatic cleanup during GitHub/upload indexing removes:
 - Archives (zip, tar, etc.)
 - Binaries and executables
 - node_modules, __pycache__, .git
-- Large data files (>1MB JSON/CSV)
 - Fonts, PDFs, Office documents
 
-Only Python and JavaScript/TypeScript files are indexed.
+Supports Python and JavaScript/TypeScript code parsing.
 
 ## License
 

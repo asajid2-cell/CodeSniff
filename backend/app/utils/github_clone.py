@@ -27,9 +27,6 @@ EXCLUDED_EXTENSIONS = {
     # Database
     '.db', '.sqlite', '.sqlite3',
 
-    # Large data files
-    '.csv', '.json', '.xml' if os.path.getsize > 1_000_000 else None,  # >1MB
-
     # Fonts
     '.ttf', '.otf', '.woff', '.woff2',
 }
