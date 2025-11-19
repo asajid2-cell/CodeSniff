@@ -57,6 +57,12 @@ def check_command(command):
     return shutil.which(command) is not None
 
 
+def run_command(cmd, **kwargs):
+    """Run command with proper shell handling for Windows"""
+    is_windows = platform.system() == 'Windows'
+    return subprocess.run(cmd, shell=is_windows, **kwargs)
+
+
 def get_python_command():
     """Get the correct Python command"""
     if check_command('python3'):
@@ -86,7 +92,7 @@ def check_prerequisites():
     # Check Python
     python_cmd = get_python_command()
     if python_cmd:
-        result = subprocess.run([python_cmd, '--version'], capture_output=True, text=True)
+        result = run_command([python_cmd, '--version'], capture_output=True, text=True)
         version = result.stdout.strip()
         print_success(f"Python: {version}")
     else:
@@ -103,7 +109,7 @@ def check_prerequisites():
 
     # Check Node.js
     if check_command('node'):
-        result = subprocess.run(['node', '--version'], capture_output=True, text=True)
+        result = run_command(['node', '--version'], capture_output=True, text=True)
         version = result.stdout.strip()
         print_success(f"Node.js: {version}")
     else:
@@ -112,7 +118,7 @@ def check_prerequisites():
 
     # Check npm
     if check_command('npm'):
-        result = subprocess.run(['npm', '--version'], capture_output=True, text=True)
+        result = run_command(['npm', '--version'], capture_output=True, text=True)
         version = result.stdout.strip()
         print_success(f"npm: {version}")
     else:
@@ -121,7 +127,7 @@ def check_prerequisites():
 
     # Check Git
     if check_command('git'):
-        result = subprocess.run(['git', '--version'], capture_output=True, text=True)
+        result = run_command(['git', '--version'], capture_output=True, text=True)
         version = result.stdout.strip()
         print_success(f"Git: {version}")
     else:
@@ -139,38 +145,10 @@ def check_prerequisites():
 
 def setup_backend():
     """Set up backend environment"""
-    print_header("Setting Up Backend")
+    print_header("Checking Backend")
 
     backend_dir = Path(__file__).parent / 'backend'
-    venv_dir = backend_dir / 'venv'
-
     os.chdir(backend_dir)
-
-    # Create virtual environment if it doesn't exist
-    if not venv_dir.exists():
-        print_info("Creating virtual environment...")
-        python_cmd = get_python_command()
-        subprocess.run([python_cmd, '-m', 'venv', 'venv'], check=True)
-        print_success("Virtual environment created")
-    else:
-        print_success("Virtual environment already exists")
-
-    # Determine venv activation and pip path
-    is_windows = platform.system() == 'Windows'
-    if is_windows:
-        pip_path = venv_dir / 'Scripts' / 'pip.exe'
-    else:
-        pip_path = venv_dir / 'bin' / 'pip'
-
-    # Upgrade pip
-    print_info("Upgrading pip...")
-    subprocess.run([str(pip_path), 'install', '--upgrade', 'pip'], check=True, capture_output=True)
-    print_success("pip upgraded")
-
-    # Install dependencies
-    print_info("Installing Python dependencies (this may take a few minutes)...")
-    subprocess.run([str(pip_path), 'install', '-r', 'requirements.txt'], check=True)
-    print_success("Python dependencies installed")
 
     # Check for .env file
     env_file = backend_dir / '.env'
@@ -195,27 +173,17 @@ def setup_backend():
                 print_warning("GROQ_API_KEY not configured in .env")
                 print_info("Chatbot feature will not work until you add your Groq API key")
 
-    print_success("\nBackend setup complete!")
+    print_success("\nBackend ready!")
 
 
 def setup_frontend():
     """Set up frontend environment"""
-    print_header("Setting Up Frontend")
+    print_header("Checking Frontend")
 
     frontend_dir = Path(__file__).parent / 'frontend'
-    node_modules = frontend_dir / 'node_modules'
-
     os.chdir(frontend_dir)
 
-    # Install npm dependencies
-    if not node_modules.exists():
-        print_info("Installing npm dependencies (this may take a few minutes)...")
-        subprocess.run(['npm', 'install'], check=True)
-        print_success("npm dependencies installed")
-    else:
-        print_success("npm dependencies already installed")
-
-    print_success("\nFrontend setup complete!")
+    print_success("Frontend ready!")
 
 
 def start_backend():
@@ -223,26 +191,18 @@ def start_backend():
     print_header("Starting Backend Server")
 
     backend_dir = Path(__file__).parent / 'backend'
-    venv_dir = backend_dir / 'venv'
 
-    is_windows = platform.system() == 'Windows'
-    if is_windows:
-        python_path = venv_dir / 'Scripts' / 'python.exe'
-    else:
-        python_path = venv_dir / 'bin' / 'python'
-
-    os.chdir(backend_dir)
+    python_cmd = get_python_command()
 
     print_info("Starting FastAPI server on http://localhost:8000")
     print_info("Press Ctrl+C to stop both servers\n")
 
-    # Start backend process
+    # Start backend process using uvicorn
+    is_windows = platform.system() == 'Windows'
     return subprocess.Popen(
-        [str(python_path), '-m', 'app.main'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1
+        [python_cmd, '-m', 'uvicorn', 'app.main:app', '--reload', '--port', '8000'],
+        cwd=str(backend_dir),
+        shell=is_windows
     )
 
 
@@ -251,18 +211,16 @@ def start_frontend():
     print_header("Starting Frontend Server")
 
     frontend_dir = Path(__file__).parent / 'frontend'
-    os.chdir(frontend_dir)
 
     print_info("Starting Vite dev server on http://localhost:5173")
     print_info("Opening browser in 5 seconds...\n")
 
     # Start frontend process
+    is_windows = platform.system() == 'Windows'
     return subprocess.Popen(
         ['npm', 'run', 'dev'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1
+        cwd=str(frontend_dir),
+        shell=is_windows
     )
 
 

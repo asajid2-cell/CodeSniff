@@ -114,7 +114,7 @@ function App() {
                   <span>{stats.total_files} files</span>
                 </div>
               )}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 ml-auto">
                 {stats && (
                   <>
                     <div className="flex items-center gap-2">
@@ -151,22 +151,22 @@ function App() {
                       <Trash2 className="w-4 h-4" />
                     </button>
                     <div className="w-px h-6 bg-gray-300 dark:bg-gray-700" />
-                    <button
-                      onClick={() => setIsUploadModalOpen(true)}
-                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
-                      title="Upload and index code"
-                    >
-                      <Upload className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setIsChatOpen(!isChatOpen)}
-                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
-                      title="AI Assistant"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                    </button>
                   </>
                 )}
+                <button
+                  onClick={() => setIsUploadModalOpen(true)}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                  title="Upload and index code"
+                >
+                  <Upload className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setIsChatOpen(!isChatOpen)}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                  title="AI Assistant"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
